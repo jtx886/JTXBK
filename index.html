@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>杰同学的博客</title>
+  <!-- 开源工具合集引入 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { primary: '#6366f1', secondary: '#ec4899', dark: '#0f172a' },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        }
+      },
+      darkMode: 'class'
+    }
+  </script>
+
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .glass { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+      .glass-dark { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+      .text-gradient { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+      .animate-float { animation: float 6s ease-in-out infinite; }
+      .bg-overlay { position: relative; }
+      .bg-overlay::before { content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.82); z-index: 0; }
+      .dark .bg-overlay::before { background: rgba(15, 23, 42, 0.82); }
+      .content-zindex { position: relative; z-index: 1; }
+      .card-img { width: 100%; min-height: 12rem; max-height: 12rem; object-fit: cover; background: #f1f5f9; }
+      .dark .card-img { background: #1e293b; }
+      @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0px); } }
+      .btn-disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+    }
+  </style>
+</head>
+
+<body class="bg-cover bg-center bg-fixed transition-all duration-300 font-sans" style="background-image: none;">
+  <!-- 导航栏 - 磨砂玻璃固定顶部 -->
+  <nav class="fixed top-0 left-0 right-0 z-50 glass dark:glass-dark border-b border-white/10 transition-shadow">
+    <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="#" class="text-2xl font-bold text-gradient bg-gradient-to-r from-primary to-secondary">
+        杰同学的博客
+      </a>
+      
+      <!-- 桌面端导航 -->
+      <div class="hidden md:flex items-center gap-6">
+        <a href="#home" class="text-slate-700 dark:text-white hover:text-primary transition-colors">首页</a>
+        <a href="#articles" class="text-slate-700 dark:text-white hover:text-primary transition-colors">文章</a>
+        <a href="#tools" class="text-slate-700 dark:text-white hover:text-primary transition-colors">实用工具</a>
+        <a href="#about" class="text-slate-700 dark:text-white hover:text-primary transition-colors">关于</a>
+        <a href="#contact" class="text-slate-700 dark:text-white hover:text-primary transition-colors">联系我</a>
+        
+        <!-- 导航页 -->
+        <a href="https://jtx886.github.io/JTXGRDHY.github.io/" target="_blank" class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all">
+          <i class="fa-solid fa-compass"></i> <span>导航页</span>
+        </a>
+
+        <!-- 背景图锁定按钮 -->
+        <button id="bgLockBtn" class="p-2 rounded-full hover:bg-white/10 transition-colors relative group" title="锁定背景图">
+          <i class="fa-solid fa-lock-open text-slate-600 dark:text-slate-300"></i>
+        </button>
+
+        <!-- 换一张背景图按钮 -->
+        <button id="bgRefreshBtn" class="p-2 rounded-full hover:bg-white/10 transition-colors" title="换一张背景图">
+          <i class="fa-solid fa-rotate-right text-slate-600 dark:text-slate-300"></i>
+        </button>
+
+        <!-- 主题切换按钮 -->
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-white/10 transition-colors">
+          <i class="fa-solid fa-moon dark:hidden text-slate-700"></i>
+          <i class="fa-solid fa-sun hidden dark:block text-white"></i>
+        </button>
+      </div>
+
+      <!-- 移动端菜单按钮 -->
+      <button id="menuToggle" class="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors">
+        <i class="fa-solid fa-bars text-slate-700 dark:text-white"></i>
+      </button>
+    </div>
+
+    <!-- 移动端下拉菜单 -->
+    <div id="mobileMenu" class="md:hidden hidden glass dark:glass-dark border-t border-white/10">
+      <div class="container mx-auto px-4 py-4 flex flex-col gap-3">
+        <a href="#home" class="text-slate-700 dark:text-white hover:text-primary py-2">首页</a>
+        <a href="#articles" class="text-slate-700 dark:text-white hover:text-primary py-2">文章</a>
+        <a href="#tools" class="text-slate-700 dark:text-white hover:text-primary py-2">实用工具</a>
+        <a href="#about" class="text-slate-700 dark:text-white hover:text-primary py-2">关于</a>
+        <a href="#contact" class="text-slate-700 dark:text-white hover:text-primary py-2">联系我</a>
+        <a href="https://jtx886.github.io/JTXGRDHY.github.io/" target="_blank" class="text-slate-700 dark:text-white hover:text-primary py-2"><i class="fa-solid fa-compass mr-2"></i>导航页</a>
+        <div class="flex items-center gap-4 pt-2">
+          <button id="mobileBgLockBtn" class="p-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-2"><i class="fa-solid fa-lock-open"></i><span class="text-sm">锁定背景</span></button>
+          <button id="mobileBgRefreshBtn" class="p-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-2"><i class="fa-solid fa-rotate-right"></i><span class="text-sm">换背景</span></button>
+          <button id="mobileThemeToggle" class="p-2 rounded-full hover:bg-white/10 transition-colors"><i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:block"></i></button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 首页Hero区 -->
+  <section id="home" class="min-h-screen pt-24 flex items-center justify-center bg-overlay">
+    <div class="container mx-auto px-4 py-20 text-center content-zindex">
+      <div class="animate-float">
+        <div class="w-32 h-32 mx-auto mb-8 rounded-full overflow-hidden border-4 border-white shadow-lg">
+          <img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESXVJpxq_vwjbVD3rYMMA3mg65Y_NqswACPSMAAvcZMFYsx5f703L5pToE.jpg" alt="杰同学的头像" class="w-full h-full object-cover" onerror="this.src='https://picsum.photos/200/200?random=avatar'">
+        </div>
+      </div>
+      <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-bold mb-6 text-gradient bg-gradient-to-r from-primary to-secondary">Hello 我是杰同学</h1>
+      <p class="text-[clamp(1rem,3vw,1.25rem)] text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-12">Hi我是杰同学欢迎访问我的博客希望下面的工具对你有帮助吧</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="https://qm.qq.com/q/64jvUG9sbeQQ" target="_blank" class="px-8 py-4 rounded-full bg-gradient-to-r from-primary to-indigo-600 text-white font-semibold shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:scale-105 transition-all duration-300"><i class="fa-brands fa-qq mr-2"></i> 加我QQ好友</a>
+        <a href="https://qm.qq.com/q/KIVypTA1Gw" target="_blank" class="px-8 py-4 rounded-full bg-gradient-to-r from-secondary to-pink-600 text-white font-semibold shadow-lg shadow-secondary/30 hover:shadow-xl hover:shadow-secondary/40 hover:scale-105 transition-all duration-300"><i class="fa-solid fa-users mr-2"></i> 加入我的群聊</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 文章列表区 -->
+  <section id="articles" class="py-20 bg-overlay">
+    <div class="container mx-auto px-4 content-zindex">
+      <h2 class="text-[clamp(1.5rem,5vw,3rem)] font-bold text-center mb-4 text-slate-800 dark:text-white">最新文章</h2>
+      <p class="text-slate-600 dark:text-slate-400 text-center max-w-2xl mx-auto mb-16">记录技术踩坑、开源项目与日常思考，持续更新中</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- 文章卡片1 -->
+        <article class="glass dark:glass-dark rounded-2xl border border-white/20 overflow-hidden hover:scale-105 transition-all duration-300 shadow-xl">
+          <img src="https://api.mir6.com/api/ecybz?random=art1" alt="高级UI博客系统开发实战" class="card-img" onerror="this.src='https://picsum.photos/800/400?random=1'">
+          <div class="p-6"><div class="flex gap-2 mb-4"><span class="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">开源项目</span><span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium">2026-03-28</span></div>
+          <h3 class="text-xl font-bold mb-2 text-slate-800 dark:text-white hover:text-primary transition-colors">高级UI博客系统开发实战</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-4 line-clamp-3">基于Tailwind CSS打造磨砂玻璃质感的高级UI博客，集成开源工具合集，实现全响应式布局与主题切换功能。</p>
+          <a href="#" class="text-primary font-medium hover:text-secondary transition-colors">阅读全文 <i class="fa-solid fa-arrow-right ml-1"></i></a></div>
+        </article>
+        <article class="glass dark:glass-dark rounded-2xl border border-white/20 overflow-hidden hover:scale-105 transition-all duration-300 shadow-xl">
+          <img src="https://api.mir6.com/api/ecybz?random=art2" alt="开源工具合集推荐" class="card-img" onerror="this.src='https://picsum.photos/800/400?random=2'">
+          <div class="p-6"><div class="flex gap-2 mb-4"><span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary text-xs font-medium">前端开发</span><span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium">2026-03-28</span></div>
+          <h3 class="text-xl font-bold mb-2 text-slate-800 dark:text-white hover:text-primary transition-colors">开源工具合集推荐：提升开发效率</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-4 line-clamp-3">整理前端开发必备的开源工具库，从UI框架到动画库，从代码高亮到图标库，一站式提升你的开发效率。</p>
+          <a href="#" class="text-primary font-medium hover:text-secondary transition-colors">阅读全文 <i class="fa-solid fa-arrow-right ml-1"></i></a></div>
+        </article>
+        <article class="glass dark:glass-dark rounded-2xl border border-white/20 overflow-hidden hover:scale-105 transition-all duration-300 shadow-xl">
+          <img src="https://api.mir6.com/api/ecybz?random=art3" alt="个人博客搭建与部署全流程" class="card-img" onerror="this.src='https://picsum.photos/800/400?random=3'">
+          <div class="p-6"><div class="flex gap-2 mb-4"><span class="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-500 text-xs font-medium">经验分享</span><span class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium">2026-03-28</span></div>
+          <h3 class="text-xl font-bold mb-2 text-slate-800 dark:text-white hover:text-primary transition-colors">个人博客搭建与部署全流程</h3>
+          <p class="text-slate-600 dark:text-slate-400 mb-4 line-clamp-3">从零开始搭建个人博客，从源码开发到域名解析、备案、部署上线，全流程详细教程，新手也能轻松上手。</p>
+          <a href="#" class="text-primary font-medium hover:text-secondary transition-colors">阅读全文 <i class="fa-solid fa-arrow-right ml-1"></i></a></div>
+        </article>
+      </div>
+      <div class="text-center mt-12"><a href="#" class="px-6 py-3 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 font-medium">查看更多文章</a></div>
+    </div>
+  </section>
+
+  <!-- 实用工具板块 - 包含50+工具，按类别动态渲染 (已按要求移除分类前图标，保留纯文字分类) -->
+  <section id="tools" class="py-20 bg-overlay">
+    <div class="container mx-auto px-4 content-zindex" id="toolsRoot">
+      <h2 class="text-[clamp(1.5rem,5vw,3rem)] font-bold text-center mb-4 text-slate-800 dark:text-white">实用工具合集</h2>
+      <p class="text-slate-600 dark:text-slate-400 text-center max-w-2xl mx-auto mb-16">50+ 精选在线工具，开箱即用，效率翻倍</p>
+      <div id="dynamicToolsContainer"></div>
+    </div>
+  </section>
+
+  <!-- 关于作者区 -->
+  <section id="about" class="py-20 bg-overlay">
+    <div class="container mx-auto px-4 content-zindex"><div class="max-w-4xl mx-auto"><h2 class="text-[clamp(1.5rem,5vw,3rem)] font-bold text-center mb-4 text-slate-800 dark:text-white">关于我</h2><p class="text-slate-600 dark:text-slate-400 text-center max-w-2xl mx-auto mb-16">个人爱好/编程/钢琴</p>
+      <div class="glass dark:glass-dark rounded-2xl border border-white/20 p-8 shadow-xl"><div class="flex flex-col md:flex-row gap-8 items-center mb-8"><div class="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg flex-shrink-0"><img src="https://img.remit.ee/api/file/BQACAgUAAyEGAASHRsPbAAESXVJpxq_vwjbVD3rYMMA3mg65Y_NqswACPSMAAvcZMFYsx5f703L5pToE.jpg" alt="杰同学的头像" class="w-full h-full object-cover" onerror="this.src='https://picsum.photos/400/400?random=about'"></div>
+        <div><h3 class="text-2xl font-bold mb-2 text-slate-800 dark:text-white">杰同学</h3><p class="text-slate-600 dark:text-slate-400 mb-4">全栈开发者 | 编程爱好者 | 内容创作者</p><p class="text-slate-700 dark:text-slate-300 mb-4">欢迎访问我的博客祝你天天开心</p><div class="flex gap-4"><a href="https://qm.qq.com/q/64jvUG9sbeQQ" target="_blank" class="text-slate-600 dark:text-slate-400 hover:text-primary text-xl"><i class="fa-brands fa-qq"></i></a><a href="#" class="text-slate-600 dark:text-slate-400 hover:text-primary text-xl"><i class="fa-brands fa-github"></i></a><a href="#" class="text-slate-600 dark:text-slate-400 hover:text-primary text-xl"><i class="fa-brands fa-csdn"></i></a></div></div></div>
+      <h4 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">技术栈</h4><div class="flex flex-wrap gap-3"><span class="px-4 py-2 rounded-full bg-primary/10 text-primary">HTML/CSS</span><span class="px-4 py-2 rounded-full bg-primary/10 text-primary">Java</span><span class="px-4 py-2 rounded-full bg-primary/10 text-primary">Kali</span><span class="px-4 py-2 rounded-full bg-primary/10 text-primary">Linux</span><span class="px-4 py-2 rounded-full bg-primary/10 text-primary">C++</span><span class="px-4 py-2 rounded-full bg-primary/10 text-primary">Python</span><span class="px-4 py-2 rounded-full bg-primary/10 text-primary">Ajax</span></div></div></div></div>
+  </section>
+
+  <!-- 联系作者区 -->
+  <section id="contact" class="py-20 bg-overlay">
+    <div class="container mx-auto px-4 content-zindex"><h2 class="text-[clamp(1.5rem,5vw,3rem)] font-bold text-center mb-4 text-slate-800 dark:text-white">联系我</h2><p class="text-slate-600 dark:text-slate-400 text-center max-w-2xl mx-auto mb-16">欢迎通过以下方式联系我</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"><div class="glass dark:glass-dark rounded-2xl border border-white/20 p-8 text-center hover:scale-105 transition-all duration-300 shadow-xl"><div class="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/20 flex items-center justify-center"><i class="fa-brands fa-qq text-4xl text-primary"></i></div><h3 class="text-xl font-bold mb-2 text-slate-800 dark:text-white">联系我的QQ</h3><p class="text-slate-600 dark:text-slate-400 mb-6">有问题请联系</p><a href="https://qm.qq.com/q/64jvUG9sbeQQ" target="_blank" class="block w-full py-3 rounded-full bg-gradient-to-r from-primary to-indigo-600 text-white font-semibold hover:shadow-lg">点击加我为QQ好友</a></div>
+      <div class="glass dark:glass-dark rounded-2xl border border-white/20 p-8 text-center hover:scale-105 transition-all duration-300 shadow-xl"><div class="w-20 h-20 mx-auto mb-6 rounded-full bg-secondary/20 flex items-center justify-center"><i class="fa-solid fa-users text-4xl text-secondary"></i></div><h3 class="text-xl font-bold mb-2 text-slate-800 dark:text-white">加入我的群聊</h3><p class="text-slate-600 dark:text-slate-400 mb-6">群号：703023060 | 杰同学的小窝，一起交流学习</p><a href="https://qm.qq.com/q/KIVypTA1Gw" target="_blank" class="block w-full py-3 rounded-full bg-gradient-to-r from-secondary to-pink-600 text-white font-semibold hover:shadow-lg">点击加入群聊</a></div></div></div>
+  </section>
+
+  <footer class="bg-overlay py-8 border-t border-white/10"><div class="container mx-auto px-4 text-center content-zindex"><p class="text-slate-600 dark:text-slate-400 mb-2">© 2026 杰同学的博客 版权所有</p><p class="text-slate-500 dark:text-slate-500 text-sm">备案号：桂ICP备202602110908号</p></div></footer>
+
+  <script>
+    // ---------- 背景图逻辑 (随机API + 锁定 + 换一张) ----------
+    const BG_API = "https://api.mir6.com/api/ecybz";
+    let isBgLocked = false;
+    const bgLockBtn = document.getElementById('bgLockBtn');
+    const mobileBgLockBtn = document.getElementById('mobileBgLockBtn');
+    const bgRefreshBtn = document.getElementById('bgRefreshBtn');
+    const mobileBgRefreshBtn = document.getElementById('mobileBgRefreshBtn');
+    const bodyEl = document.body;
+
+    function loadBgState() {
+      const storedLock = localStorage.getItem('bgLocked') === 'true';
+      const storedUrl = localStorage.getItem('bgLockedUrl');
+      isBgLocked = storedLock;
+      if (isBgLocked && storedUrl) {
+        setBodyBackground(storedUrl);
+      } else {
+        setRandomBackground(false);
+      }
+      updateLockUI();
+    }
+
+    function setBodyBackground(url) {
+      bodyEl.style.backgroundImage = `url('${url}')`;
+      bodyEl.style.backgroundSize = 'cover';
+      bodyEl.style.backgroundPosition = 'center';
+      bodyEl.style.backgroundAttachment = 'fixed';
+    }
+
+    function getRandomBgUrl() {
+      return `${BG_API}?t=${Date.now()}&r=${Math.random()}`;
+    }
+
+    function setRandomBackground(updateStoreIfLocked = false) {
+      const newUrl = getRandomBgUrl();
+      setBodyBackground(newUrl);
+      if (isBgLocked && updateStoreIfLocked) {
+        localStorage.setItem('bgLockedUrl', newUrl);
+      } else if (!isBgLocked) {
+        localStorage.setItem('lastUnlockedBg', newUrl);
+      }
+      if (!isBgLocked) {
+        localStorage.setItem('lastUnlockedBg', newUrl);
+      }
+      return newUrl;
+    }
+
+    function lockBackground() {
+      if (isBgLocked) return;
+      let currentBg = bodyEl.style.backgroundImage;
+      let url = '';
+      if (currentBg && currentBg !== 'none') {
+        const match = currentBg.match(/url\(["']?([^"')]+)["']?\)/);
+        if (match) url = match[1];
+      }
+      if (!url) url = getRandomBgUrl();
+      setBodyBackground(url);
+      localStorage.setItem('bgLockedUrl', url);
+      localStorage.setItem('bgLocked', 'true');
+      isBgLocked = true;
+      updateLockUI();
+      setRefreshButtonsEnabled(false);
+    }
+
+    function unlockBackground() {
+      if (!isBgLocked) return;
+      localStorage.removeItem('bgLocked');
+      localStorage.removeItem('bgLockedUrl');
+      isBgLocked = false;
+      setRandomBackground(false);
+      updateLockUI();
+      setRefreshButtonsEnabled(true);
+    }
+
+    function refreshBackground() {
+      if (isBgLocked) {
+        alert("背景图已锁定，请先解锁再更换新背景！");
+        return;
+      }
+      const newUrl = getRandomBgUrl();
+      setBodyBackground(newUrl);
+      localStorage.setItem('lastUnlockedBg', newUrl);
+    }
+
+    function setRefreshButtonsEnabled(enabled) {
+      const btns = [bgRefreshBtn, mobileBgRefreshBtn];
+      btns.forEach(btn => {
+        if (enabled) {
+          btn.classList.remove('btn-disabled', 'opacity-50', 'cursor-not-allowed');
+          btn.disabled = false;
+        } else {
+          btn.classList.add('btn-disabled', 'opacity-50', 'cursor-not-allowed');
+          btn.disabled = true;
+        }
+      });
+    }
+
+    function updateLockUI() {
+      const lockIcons = document.querySelectorAll('#bgLockBtn i, #mobileBgLockBtn i');
+      const lockSpans = document.querySelectorAll('#mobileBgLockBtn span');
+      if (isBgLocked) {
+        lockIcons.forEach(icon => {
+          icon.classList.remove('fa-lock-open');
+          icon.classList.add('fa-lock');
+        });
+        if (lockSpans.length) lockSpans.forEach(span => span.innerText = '已锁定');
+        setRefreshButtonsEnabled(false);
+      } else {
+        lockIcons.forEach(icon => {
+          icon.classList.remove('fa-lock');
+          icon.classList.add('fa-lock-open');
+        });
+        if (lockSpans.length) lockSpans.forEach(span => span.innerText = '锁定背景');
+        setRefreshButtonsEnabled(true);
+      }
+    }
+
+    bgLockBtn.addEventListener('click', () => { isBgLocked ? unlockBackground() : lockBackground(); });
+    mobileBgLockBtn.addEventListener('click', () => { isBgLocked ? unlockBackground() : lockBackground(); });
+    bgRefreshBtn.addEventListener('click', refreshBackground);
+    mobileBgRefreshBtn.addEventListener('click', refreshBackground);
+    loadBgState();
+
+    // ---------- 50+ 实用工具数据  ----------
+    const toolsData = [
+      { category: "开发工具", items: [
+        { name: "JSON格式化", desc: "JSON在线解析、格式化、校验、压缩，前端开发必备", url: "https://www.json.cn/", icon: "fa-code" },
+        { name: "正则测试工具", desc: "在线正则表达式测试、调试，支持多语言，实时匹配", url: "https://regex101.com/", icon: "fa-search" },
+        { name: "API接口测试", desc: "Postman在线版，接口调试、测试、文档生成一站式", url: "https://www.postman.com/", icon: "fa-server" },
+        { name: "代码在线运行", desc: "前端代码在线编写、运行、分享，海量优秀代码案例", url: "https://codepen.io/", icon: "fa-pen-to-square" },
+        { name: "GitHub加速", desc: "GitHub镜像/代理，加速克隆与访问", url: "https://github.kotori.top/", icon: "fa-github-alt" },
+        { name: "JS压缩工具", desc: "JavaScript混淆、压缩，减小体积", url: "https://jscompress.com/", icon: "fa-file-code" },
+        { name: "Can I Use", desc: "前端兼容性查询，CSS/JS特性支持情况", url: "https://caniuse.com/", icon: "fa-check-circle" },
+        { name: "Carbon代码美图", desc: "代码转精美图片，分享社交媒体", url: "https://carbon.now.sh/", icon: "fa-palette" }
+      ] },
+      { category: "图片处理", items: [
+        { name: "图片无损压缩", desc: "TinyPNG在线压缩，PNG/JPG/WebP无损压缩", url: "https://tinypng.com/", icon: "fa-image" },
+        { name: "AI智能抠图", desc: "一键去除图片背景，人像、物品抠图", url: "https://www.remove.bg/zh", icon: "fa-cut" },
+        { name: "图片格式转换", desc: "支持300+格式互转，在线即用", url: "https://convertio.co/zh/", icon: "fa-exchange-alt" },
+        { name: "高清壁纸网站", desc: "全球顶级高清壁纸库，4K/8K壁纸", url: "https://wallhaven.cc/", icon: "fa-desktop" },
+        { name: "极速图床", desc: "免费图片外链，稳定存储，快速上传分享", url: "https://img.remit.ee/", icon: "fa-cloud-upload-alt" },
+        { name: "Squoosh", desc: "谷歌出品，极致图片压缩", url: "https://squoosh.app/", icon: "fa-compress" },
+        { name: "PhotoPea", desc: "在线PS替代，支持PSD", url: "https://www.photopea.com/", icon: "fa-paintbrush" }
+      ] },
+      { category: "办公实用工具", items: [
+        { name: "PDF全能处理", desc: "PDF转换、合并、拆分、压缩、解密", url: "https://www.ilovepdf.com/zh-cn", icon: "fa-file-pdf" },
+        { name: "二维码生成", desc: "在线生成二维码，支持网址、文本、名片", url: "https://cli.im/", icon: "fa-qrcode" },
+        { name: "单位换算工具", desc: "长度、重量、温度、时间、汇率等全品类换算", url: "https://www.zhongguosou.com/zonghe/danweihuasuan.html", icon: "fa-ruler" },
+        { name: "百度翻译", desc: "多语言翻译，支持文本、文档、图片", url: "https://fanyi.baidu.com/", icon: "fa-language" },
+        { name: "ProcessOn", desc: "在线流程图、思维导图", url: "https://www.processon.com/", icon: "fa-project-diagram" },
+        { name: "腾讯文档", desc: "在线协作文档，实时同步", url: "https://docs.qq.com/", icon: "fa-file-alt" }
+      ] },
+      { category: "AI工具", items: [
+        { name: "ChatGPT Web", desc: "AI对话助手", url: "https://chat.openai.com/", icon: "fa-robot" },
+        { name: "Midjourney", desc: "AI绘画神器", url: "https://www.midjourney.com/", icon: "fa-magic" },
+        { name: "Notion AI", desc: "智能笔记助手", url: "https://www.notion.so/", icon: "fa-brain" },
+        { name: "Hugging Face", desc: "AI模型库，开源模型社区", url: "https://huggingface.co/", icon: "fa-cube" }
+      ] },
+      { category: "设计资源", items: [
+        { name: "Iconify", desc: "海量开源图标库", url: "https://iconify.design/", icon: "fa-icons" },
+        { name: "Coolors", desc: "配色方案生成器", url: "https://coolors.co/", icon: "fa-swatchbook" },
+        { name: "Font Awesome", desc: "矢量图标库", url: "https://fontawesome.com/", icon: "fa-font" },
+        { name: "Pexels", desc: "免费高清图库", url: "https://www.pexels.com/", icon: "fa-camera" }
+      ] },
+      { category: "在线转换", items: [
+        { name: "Base64编码", desc: "图片/文本Base64互转", url: "https://base64.us/", icon: "fa-code-branch" },
+        { name: "Markdown编辑器", desc: "在线MD编写，实时预览", url: "https://mdnice.com/", icon: "fa-markdown" },
+        { name: "时间戳转换", desc: "时间戳与日期互转", url: "https://tool.lu/timestamp/", icon: "fa-clock" },
+        { name: "RGB颜色转换", desc: "颜色值转换工具", url: "https://www.sioe.cn/yingyong/yanse-rgb-16/", icon: "fa-eye-dropper" }
+      ] },
+      { category: "开发辅助", items: [
+        { name: "DNS检测", desc: "全球DNS刷新检测", url: "https://www.whatsmydns.net/", icon: "fa-globe" },
+        { name: "IP查询", desc: "IP归属地查询", url: "https://ip.cn/", icon: "fa-map-marker-alt" },
+        { name: "UptimeRobot", desc: "网站监控", url: "https://uptimerobot.com/", icon: "fa-chart-line" },
+        { name: "Webhook.site", desc: "Webhook调试工具", url: "https://webhook.site/", icon: "fa-bolt" },
+        { name: "JSON Generator", desc: "模拟假数据生成", url: "https://www.json-generator.com/", icon: "fa-database" }
+      ] },
+      { category: "学习社区", items: [
+        { name: "Stack Overflow", desc: "开发者问答社区", url: "https://stackoverflow.com/", icon: "fa-stack-overflow" },
+        { name: "GitHub探索", desc: "开源项目聚集地", url: "https://github.com/", icon: "fa-github" },
+        { name: "菜鸟教程", desc: "编程入门教程", url: "https://www.runoob.com/", icon: "fa-graduation-cap" },
+        { name: "MDN文档", desc: "Web技术权威文档", url: "https://developer.mozilla.org/", icon: "fa-book" }
+      ] },
+      { category: "安全工具", items: [
+        { name: "VirusTotal", desc: "文件安全检测", url: "https://www.virustotal.com/", icon: "fa-shield-alt" },
+        { name: "Have I Been Pwned", desc: "邮箱泄露查询", url: "https://haveibeenpwned.com/", icon: "fa-envelope" }
+      ] },
+      { category: "数据分析", items: [
+        { name: "Google Analytics", desc: "网站流量分析", url: "https://analytics.google.com/", icon: "fa-chart-simple" },
+        { name: "百度统计", desc: "中文站点分析", url: "https://tongji.baidu.com/", icon: "fa-chart-pie" }
+      ] },
+      { category: "效率工具", items: [
+        { name: "Ray.so", desc: "代码截图美化", url: "https://ray.so/", icon: "fa-camera-retro" },
+        { name: "Excalidraw", desc: "手绘风格白板", url: "https://excalidraw.com/", icon: "fa-pencil-ruler" },
+        { name: "视频/音频下载器", desc: "支持多平台视频/音频解析下载，无水印提取", url: "https://downloader.bhwa233.com/zh", icon: "fa-video" },
+        { name: "7e在线工具箱", desc: "多功能在线工具箱，集成开发/图片/转换等实用小工具", url: "https://tools.7e.ink/", icon: "fa-toolbox" }
+      ] }
+    ];
+
+    // 动态渲染工具函数
+    function renderTools() {
+      const container = document.getElementById('dynamicToolsContainer');
+      if (!container) return;
+      let html = '';
+      for (const cat of toolsData) {
+        html += `<div class="mb-12"><h3 class="text-xl font-bold mb-6 text-slate-800 dark:text-white pl-2 border-l-4 border-primary">${cat.category}</h3><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">`;
+        for (const tool of cat.items) {
+          html += `<a href="${tool.url}" target="_blank" rel="noopener noreferrer" class="glass dark:glass-dark rounded-xl border border-white/20 p-6 hover:scale-105 transition-all duration-300 shadow-lg block group">
+            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-4"><i class="fa-solid ${tool.icon} text-2xl text-primary"></i></div>
+            <h4 class="text-lg font-bold mb-2 text-slate-800 dark:text-white group-hover:text-primary transition-colors">${tool.name}</h4>
+            <p class="text-slate-600 dark:text-slate-400 text-sm">${tool.desc}</p>
+          </a>`;
+        }
+        html += `</div></div>`;
+      }
+      container.innerHTML = html;
+    }
+    renderTools();
+
+    // 主题切换 + 移动菜单
+    const themeToggle = document.getElementById('themeToggle');
+    const mobileThemeToggle = document.getElementById('mobileThemeToggle');
+    const htmlEl = document.documentElement;
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) htmlEl.classList.add('dark');
+    else htmlEl.classList.remove('dark');
+    function toggleTheme() { htmlEl.classList.toggle('dark'); localStorage.theme = htmlEl.classList.contains('dark') ? 'dark' : 'light'; }
+    themeToggle.addEventListener('click', toggleTheme);
+    mobileThemeToggle.addEventListener('click', toggleTheme);
+
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuToggle.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) { window.scrollTo({ top: targetElement.offsetTop - 80, behavior: 'smooth' }); mobileMenu.classList.add('hidden'); }
+      });
+    });
+
+    gsap.from('nav', { y: -100, opacity: 0, duration: 0.8, ease: 'power2.out' });
+    gsap.from('#home .container', { y: 50, opacity: 0, duration: 1, delay: 0.3, ease: 'power2.out' });
+    window.addEventListener('scroll', () => { const nav = document.querySelector('nav'); if (window.scrollY > 50) nav.classList.add('shadow-lg'); else nav.classList.remove('shadow-lg'); });
+  </script>
+</body>
+</html>
